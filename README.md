@@ -8,7 +8,7 @@ Visit: **https://Rustyweasel121212.github.io**
 ## ✨ Features
 
 - 📤 **Free Upload** - Share your schematics and texture packs
-- 🔍 **Browse & Search** - Find amazing creations from the community
+- 🔍 **Browse & Search** - building
 - 📥 **Download** - Get files with one click
 - 🎨 **Modern Design** - Beautiful dark gaming theme
 - 📱 **Responsive** - Works on all devices
@@ -17,7 +17,7 @@ Visit: **https://Rustyweasel121212.github.io**
 ## 📁 What You Can Upload
 
 - **Schematics** - `.bloxdschematic` files
-- **Texture Packs** - `.zip`, `.rar`, image files
+- **Texture Packs** - still building
 
 ## 🚀 Quick Start
 
