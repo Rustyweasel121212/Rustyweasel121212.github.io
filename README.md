@@ -1,4 +1,4 @@
-# 🎮 Bloxd.io Marketplace
+#  Bloxd.io Marketplace
 
 A free community platform for sharing Bloxd.io schematics and texture packs!
 
