@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloxd.io Marketplace - Schematics & Texture Packs</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <h1>🎮 Bloxd.io Marketplace</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#home" onclick="showHome()">Home</a></li>
+                <li><a href="#browse" onclick="showBrowse()">Browse</a></li>
+                <li><a href="#upload" onclick="showUpload()">Upload</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Home Section -->
+    <section id="home" class="home-section active">
+        <div class="hero">
+            <h2>Welcome to Bloxd.io Marketplace</h2>
+            <p>Discover and share amazing schematics and texture packs</p>
+            <div class="hero-buttons">
+                <button class="btn btn-primary" onclick="showBrowse()">Browse Files</button>
+                <button class="btn btn-secondary" onclick="showUpload()">Upload Now</button>
+            </div>
+        </div>
+        <div class="featured-section">
+            <h3>Featured Uploads</h3>
+            <div id="featured-container" class="grid-container"></div>
+        </div>
+    </section>
+
+    <!-- Browse Section -->
+    <section id="browse" class="browse-section">
+        <div class="browse-container">
+            <h2>Browse Files</h2>
+            
+            <div class="filters">
+                <input type="text" id="search-input" placeholder="Search by name..." onkeyup="filterFiles()">
+                <select id="type-filter" onchange="filterFiles()">
+                    <option value="">All Types</option>
+                    <option value="schematic">Schematics</option>
+                    <option value="texture">Texture Packs</option>
+                </select>
+                <select id="sort-filter" onchange="filterFiles()">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="downloads">Most Downloaded</option>
+                </select>
+            </div>
+
+            <div id="files-container" class="grid-container"></div>
+        </div>
+    </section>
+
+    <!-- Upload Section -->
+    <section id="upload" class="upload-section">
+        <div class="upload-container">
+            <h2>Upload Your Creation</h2>
+            <form id="upload-form" onsubmit="handleUpload(event)">
+                <div class="form-group">
+                    <label for="file-name">Name:</label>
+                    <input type="text" id="file-name" required placeholder="Enter a creative name">
+                </div>
+
+                <div class="form-group">
+                    <label for="file-type">Type:</label>
+                    <select id="file-type" required>
+                        <option value="">Select Type</option>
+                        <option value="schematic">Schematic (.bloxdschematic)</option>
+                        <option value="texture">Texture Pack</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="file-description">Description:</label>
+                    <textarea id="file-description" rows="4" placeholder="Describe your creation..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="file-upload">Upload File:</label>
+                    <input type="file" id="file-upload" required accept=".bloxdschematic,.zip,.rar,.png,.jpg">
+                    <small>Supported: .bloxdschematic, .zip, .rar, .png, .jpg</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="author-name">Your Name:</label>
+                    <input type="text" id="author-name" required placeholder="Your name or username">
+                </div>
+
+                <button type="submit" class="btn btn-primary">Upload File</button>
+            </form>
+            <div id="upload-message" class="message"></div>
+        </div>
+    </section>
+
+    <!-- File Detail Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Bloxd.io Marketplace. Share your creations freely!</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
