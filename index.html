@@ -94,7 +94,10 @@
                     <input type="text" id="author-name" required placeholder="Your name or username">
                 </div>
 
-                <button type="submit" class="btn btn-primary">Upload File</button>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Upload File</button>
+                    <button type="button" class="btn btn-cancel" onclick="cancelUpload()">Cancel</button>
+                </div>
             </form>
             <div id="upload-message" class="message"></div>
         </div>
