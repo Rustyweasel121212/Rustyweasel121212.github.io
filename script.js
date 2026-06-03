@@ -1,4 +1,67 @@
-// Initialize files data from localStorage
+// IndexedDB Setup
+const DB_NAME = 'BloxdioMarketplaceDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'files';
+
+let db;
+
+// Initialize IndexedDB
+function initDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+            db = request.result;
+            resolve(db);
+        };
+        
+        request.onupgradeneeded = (event) => {
+            db = event.target.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+                db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+            }
+        };
+    });
+}
+
+// Save file to IndexedDB
+function saveFileToDB(file) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction([STORE_NAME], 'readwrite');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.put(file);
+        
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+    });
+}
+
+// Get file from IndexedDB
+function getFileFromDB(fileId) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction([STORE_NAME], 'readonly');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.get(fileId);
+        
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+    });
+}
+
+// Get all files from IndexedDB
+function getAllFilesFromDB() {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction([STORE_NAME], 'readonly');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.getAll();
+        
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+    });
+}
+
+// Initialize files data from localStorage and IndexedDB
 let files = JSON.parse(localStorage.getItem('bloxdFiles')) || [
     {
         id: 1,
@@ -9,7 +72,7 @@ let files = JSON.parse(localStorage.getItem('bloxdFiles')) || [
         author: 'BuilderPro',
         date: new Date(Date.now() - 7*24*60*60*1000),
         downloads: 245,
-        fileUrl: '#download-1'
+        hasFile: false
     },
     {
         id: 2,
@@ -20,7 +83,7 @@ let files = JSON.parse(localStorage.getItem('bloxdFiles')) || [
         author: 'DesignMaster',
         date: new Date(Date.now() - 3*24*60*60*1000),
         downloads: 189,
-        fileUrl: '#download-2'
+        hasFile: false
     },
     {
         id: 3,
@@ -31,7 +94,7 @@ let files = JSON.parse(localStorage.getItem('bloxdFiles')) || [
         author: 'ArchitectKing',
         date: new Date(Date.now() - 14*24*60*60*1000),
         downloads: 412,
-        fileUrl: '#download-3'
+        hasFile: false
     },
     {
         id: 4,
@@ -42,7 +105,7 @@ let files = JSON.parse(localStorage.getItem('bloxdFiles')) || [
         author: 'FutureTech',
         date: new Date(Date.now() - 5*24*60*60*1000),
         downloads: 156,
-        fileUrl: '#download-4'
+        hasFile: false
     },
     {
         id: 5,
@@ -53,7 +116,7 @@ let files = JSON.parse(localStorage.getItem('bloxdFiles')) || [
         author: 'SkyBuilder',
         date: new Date(Date.now() - 2*24*60*60*1000),
         downloads: 89,
-        fileUrl: '#download-5'
+        hasFile: false
     }
 ];
 
@@ -154,6 +217,10 @@ function openModal(fileId) {
     const dateString = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     
     const modalBody = document.getElementById('modal-body');
+    const downloadButtonHTML = file.hasFile 
+        ? `<button class="download-btn" onclick="downloadFile(${file.id})">📥 Download (${formatFileSize(file.fileSize)})</button>`
+        : `<button class="download-btn" style="opacity: 0.5; cursor: not-allowed;">📁 No File Uploaded</button>`;
+    
     modalBody.innerHTML = `
         <div class="modal-detail-icon">${file.icon}</div>
         <h2 class="modal-detail-title">${file.name}</h2>
@@ -176,7 +243,7 @@ function openModal(fileId) {
         </div>
 
         <div class="modal-detail-actions">
-            <button class="download-btn" onclick="downloadFile(${file.id})">📥 Download</button>
+            ${downloadButtonHTML}
             <button class="close-btn" onclick="closeModal()">Close</button>
         </div>
     `;
@@ -189,23 +256,50 @@ function closeModal() {
     document.getElementById('modal').classList.remove('show');
 }
 
+// Format file size
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+}
+
 // Download File
-function downloadFile(fileId) {
+async function downloadFile(fileId) {
     const file = files.find(f => f.id === fileId);
-    if (!file) return;
+    if (!file || !file.hasFile) {
+        alert('❌ File not available for download');
+        return;
+    }
 
-    // Update download count
-    file.downloads++;
-    localStorage.setItem('bloxdFiles', JSON.stringify(files));
+    try {
+        const fileData = await getFileFromDB(fileId);
+        if (!fileData) {
+            alert('❌ File not found in storage');
+            return;
+        }
 
-    // Simulate download (in real app, this would download an actual file)
-    alert(`✅ Downloaded: ${file.name}\n\nDownloads: ${file.downloads}`);
-    
-    // In a real application, you would:
-    // const link = document.createElement('a');
-    // link.href = file.fileUrl;
-    // link.download = file.name;
-    // link.click();
+        // Update download count
+        file.downloads++;
+        localStorage.setItem('bloxdFiles', JSON.stringify(files));
+
+        // Create blob and download
+        const blob = new Blob([fileData.fileContent], { type: fileData.mimeType });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileData.fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        showUploadMessage(`✅ Downloaded: ${file.name}`, 'success');
+    } catch (error) {
+        console.error('Download error:', error);
+        alert('❌ Error downloading file: ' + error.message);
+    }
 }
 
 // Cancel Upload
@@ -218,7 +312,7 @@ function cancelUpload() {
 }
 
 // Handle Upload
-function handleUpload(event) {
+async function handleUpload(event) {
     event.preventDefault();
 
     const fileName = document.getElementById('file-name').value;
@@ -233,36 +327,78 @@ function handleUpload(event) {
         return;
     }
 
-    // Create new file entry
-    const newFile = {
-        id: files.length + 1,
-        name: fileName,
-        type: fileType,
-        icon: fileType === 'schematic' ? '📁' : '🎨',
-        description: fileDescription || 'No description provided.',
-        author: authorName,
-        date: new Date(),
-        downloads: 0,
-        fileUrl: '#' + Date.now()
-    };
+    const uploadedFile = fileUpload.files[0];
+    
+    // Check file size (max 500MB)
+    if (uploadedFile.size > 500 * 1024 * 1024) {
+        showUploadMessage('❌ File too large! Max 500MB allowed.', 'error');
+        return;
+    }
 
-    // Add to files array
-    files.push(newFile);
-    localStorage.setItem('bloxdFiles', JSON.stringify(files));
+    try {
+        showUploadMessage('📤 Uploading...', 'success');
 
-    // Show success message
-    showUploadMessage(`✅ Successfully uploaded: ${fileName}!`, 'success');
+        // Read file as array buffer
+        const fileBuffer = await readFileAsBuffer(uploadedFile);
+        
+        const newFileId = Math.max(...files.map(f => f.id)) + 1;
 
-    // Reset form
-    document.getElementById('upload-form').reset();
+        // Create file metadata
+        const newFile = {
+            id: newFileId,
+            name: fileName,
+            type: fileType,
+            icon: fileType === 'schematic' ? '📁' : '🎨',
+            description: fileDescription || 'No description provided.',
+            author: authorName,
+            date: new Date(),
+            downloads: 0,
+            hasFile: true,
+            fileSize: uploadedFile.size,
+            originalFileName: uploadedFile.name
+        };
 
-    // Scroll to top
-    window.scrollTo(0, 0);
+        // Save to IndexedDB
+        const dbFile = {
+            id: newFileId,
+            fileName: uploadedFile.name,
+            fileContent: fileBuffer,
+            mimeType: uploadedFile.type
+        };
 
-    // Show home after 2 seconds
-    setTimeout(() => {
-        showHome();
-    }, 2000);
+        await saveFileToDB(dbFile);
+
+        // Add to files array
+        files.push(newFile);
+        localStorage.setItem('bloxdFiles', JSON.stringify(files));
+
+        // Show success message
+        showUploadMessage(`✅ Successfully uploaded: ${fileName}! (${formatFileSize(uploadedFile.size)})`, 'success');
+
+        // Reset form
+        document.getElementById('upload-form').reset();
+
+        // Scroll to top
+        window.scrollTo(0, 0);
+
+        // Show home after 2 seconds
+        setTimeout(() => {
+            showHome();
+        }, 2000);
+    } catch (error) {
+        console.error('Upload error:', error);
+        showUploadMessage('❌ Upload failed: ' + error.message, 'error');
+    }
+}
+
+// Read file as buffer
+function readFileAsBuffer(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+    });
 }
 
 // Show Upload Message
@@ -285,6 +421,12 @@ window.onclick = function(event) {
 }
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
-    showHome();
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        await initDB();
+        showHome();
+    } catch (error) {
+        console.error('DB initialization error:', error);
+        showHome();
+    }
 });
