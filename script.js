@@ -77,6 +77,8 @@ function showBrowse() {
 
 function showUpload() {
     showSection('upload');
+    document.getElementById('upload-form').reset();
+    document.getElementById('upload-message').className = 'message';
 }
 
 // Load Featured Files
@@ -204,6 +206,15 @@ function downloadFile(fileId) {
     // link.href = file.fileUrl;
     // link.download = file.name;
     // link.click();
+}
+
+// Cancel Upload
+function cancelUpload() {
+    if (confirm('Are you sure you want to cancel the upload?')) {
+        document.getElementById('upload-form').reset();
+        document.getElementById('upload-message').className = 'message';
+        showHome();
+    }
 }
 
 // Handle Upload
