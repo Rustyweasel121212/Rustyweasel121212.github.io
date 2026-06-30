@@ -41,6 +41,24 @@ Visit: **https://Rustyweasel121212.github.io**
 - `script.js` - Full functionality
 - `README.md` - This file
 
+## how to use and make texture pack
+
+very long text beneath
+
+
+
+
+
+
+
+
+
+
+A bloxd texture pack is actually a folder but you can not upload a folder as you can only upload a file so people just make a folder in to a zip file so it is like a folder what you need to do to unzip something you just click openit and drag anything in it into a new folder.
+than you drag the new folder into bloxd texture pack
+thats it 
+=_=
+
 
 
 ---
